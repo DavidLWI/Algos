@@ -19,15 +19,14 @@ class PriceScreenSetting(Setting):
 		super().__init__(name, status)
 		self.price = price
 		self.comparison = comparison
-	def apply(self, ticker):
+	def apply(self, ticker, info):
 		if self.status == False:
 			return True
 		try:
-			info = yf.Ticker(ticker).fast_info
-			price = info.get('lastPrice')
+			price = info.get('currentPrice')
 			if price is not None:
 				if ((self.comparison=='>=' and price >= self.price) or (self.comparison=='<=' and price <= self.price)):
-					print(f"{ticker} passed the price filter: {price} meets the threshold ({self.comparison} {self.price}).")
+					print(f"{ticker} passed the price filter: {price:.2f} meets the threshold ({self.comparison} {self.price}).")
 					return True
 		except Exception:
 			return False
@@ -38,12 +37,17 @@ class PriceScreenSetting(Setting):
 		print(f"VARIABLES: status={self.status}, price-value={self.price}, comparison-method=\"{self.comparison}\"")
 
 	def adjust(self):
+		switch = input("Enter nothing to turn on this filter, vice versa: ")
+		self.status = True
+		if (switch != ""):
+			self.status = False
+			return
 		self.price = ""
 		while (self.price.isdigit() == False):
 			self.price = input("Please input an integer value for price-value: ")
 		self.price = int(self.price)
 		self.comparison = ""
-		while (self.comparison != ">=" and self.comparison != "<="):
+		while self.comparison not in (">=", "<="):
 			self.comparison = input("Please input \"<=\" or \">=\" for comparison method: ")
 		print(f"\nVARIABLES: status={self.status}, price-value={self.price}, comparison-method=\"{self.comparison}\"\n")
 
@@ -53,16 +57,15 @@ class MarketCapScreenSetting(Setting):
         self.market_cap = market_cap
         self.comparison = comparison
     
-    def apply(self, ticker):
+    def apply(self, ticker, info):
         if not self.status:
             return True
         try:
-            info = yf.Ticker(ticker).info
             market_cap = info.get('marketCap')/1_000_000
             if market_cap is not None:
                 if (self.comparison == '>=' and market_cap >= self.market_cap) or \
                    (self.comparison == '<=' and market_cap <= self.market_cap):
-                    print(f"{ticker} passed the market-cap filter: {market_cap}M meets the threshold ({self.comparison} {self.market_cap}M).")
+                    print(f"{ticker} passed the market-cap filter: {market_cap:.2f}M meets the threshold ({self.comparison} {self.market_cap}M).")
                     return True
         except Exception:
             return False
@@ -73,15 +76,18 @@ class MarketCapScreenSetting(Setting):
         print(f"VARIABLES: status={self.status}, market_cap-value={self.market_cap}M, comparison-method=\"{self.comparison}\"")
     
     def adjust(self):
+        
         val = ""
         while not val.isdigit():
             val = input("Please input an integer value for market cap (in million USD): ")
         self.market_cap = int(val)
-        comp = ""
-        while comp not in (">=", "<="):
-            comp = input("Please input \"<=\" or \">=\" for comparison method: ")
+        comparison = ""
+        while comparison not in (">=", "<="):
+            comparison = input("Please input \"<=\" or \">=\" for comparison method: ")
         self.comparison = comp
         print(f"\nVARIABLES: status={self.status}, market_cap-value={self.market_cap}M, comparison-method=\"{self.comparison}\"\n")
+
+
 
 
 def settings_panel(filters):
@@ -117,7 +123,8 @@ def apply_filters(tickers, filters):
 		elif count > 15: 
 			print(f"Retry {count}: ")
 		for filter in filters:
-			if (filter.apply(ticker) != True):
+			info = yf.Ticker(ticker).info
+			if (filter.apply(ticker, info) != True):
 				qualified = False
 				break
 	return ticker
