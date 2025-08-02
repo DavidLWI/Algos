@@ -4,6 +4,7 @@ import pandas as pd
 import time
 import yfinance as yf
 
+#A superclass for making filters or any other settings
 class Setting:
 	def __init__(self, name, status=True):
 		self.name = name
@@ -28,20 +29,31 @@ class PriceScreenSetting(Setting):
 			return False
 		return False
 
-
+def apply_filters(tickers, filters):
+	qualified = False
+	while (qualified != True):
+		qualified = True
+		ticker = random.choice(tickers)
+		for filter in filters:
+			if (filter.apply(ticker) != True):
+				qualified = False
+				break
+	return ticker
+		
+print("This program aims to provide fast tradingview access to a randomly selected stock, with customized basic filters.\n")
+print("Control: Enter nothing to continue, Enter \"filters\" to access filter settings.\n")
 df = pd.read_csv("https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt", sep='|')
 #The last row is a summary which is marked by file creation time
 df = df[~df['Symbol'].str.contains('File Creation Time', na=False)]
 nasdaq_tickers = df.dropna(subset=['Symbol'])  #Drop nan values
 nasdaq_tickers = df['Symbol'].astype(str).str.strip()  #Convert all into strings
 exchange="NASDAQ"
-price_filter = PriceScreenSetting(min_price=15)
-#Random pick a stock
+price_filter = PriceScreenSetting()
+filters = []
+filters.append(price_filter)
 str = ""
 while (str == ""):
-	ticker = random.choice(nasdaq_tickers)
-	while (price_filter.apply(ticker) == False):
-		ticker = random.choice(nasdaq_tickers)
+	ticker = apply_filters(nasdaq_tickers, filters)
 	url = f"https://www.tradingview.com/chart/?symbol={exchange}:{ticker}"
 	webbrowser.open(url)
 	time.sleep(0.3)
