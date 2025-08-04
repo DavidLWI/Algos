@@ -170,6 +170,7 @@ class SMAComparisonSetting(Setting):
             close_prices = data['Close']
             # If not enough data to compute SMA
             if len(close_prices) < self.period:
+                logging.error(f"Ticker {ticker} does not have enough data ({len(data)} days) to calculate the 200-day moving average.")
                 return False
             # Calculate SMA for the specified period
             sma = close_prices.rolling(window=self.period).mean().iloc[-1]
@@ -201,6 +202,7 @@ class SMAComparisonSetting(Setting):
 # ==============================================================================
 
 def load_nasdaq_tickers() -> list[str]:
+    print()
     logging.info("Loading NASDAQ tickers...\n")
     df = pd.read_csv(NASDAQ_LIST_URL, sep='|')
     #The last row is a summary which is marked by file creation time
@@ -271,7 +273,6 @@ def main() -> None:
     cmd = ""
     while (True):
         cmd = input("Press Enter to run, type \"settings\" to configure, or \"q\" to quit: ").strip().lower()
-
         if (cmd==""):
             ticker = apply_filters(tickers_list, filters)
             if (ticker == None):
