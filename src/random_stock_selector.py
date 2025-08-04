@@ -22,9 +22,8 @@ import yfinance as yf
 NASDAQ_LIST_URL = (
     "https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt"
 )
-MAX_RETRIES = 25
+MAX_RETRIES = 35
 EXCHANGE = "NASDAQ"
-MAX_PERIOD = 365
 
 # ==============================================================================
 # Logging
@@ -168,7 +167,7 @@ class SMAComparisonSetting(Setting):
             return True
         try:
             # Download historical close prices for the ticker
-            data = yf.Ticker(ticker).history(period=f'{MAX_PERIOD}d') 
+            data = yf.Ticker(ticker).history(period=f'{self.period}d') 
             close_prices = data['Close']
             # If not enough data to compute SMA
             if len(close_prices) < self.period:
@@ -240,7 +239,7 @@ def apply_filters(tickers : list[str], filters : list[Setting]) -> str | None:
         qualified = True
         ticker = random.choice(tickers)
 
-        if (count >= 10 and count%5 == 0):
+        if (count >= 15 and count%5 == 0):
             logging.info(f"Still Searching... ({count} retries)")
 
         if (count > MAX_RETRIES): 
