@@ -10,7 +10,6 @@ import logging
 import random
 import time
 import webbrowser
-from abc import ABC, abstractmethod
 
 import pandas as pd
 import yfinance as yf
