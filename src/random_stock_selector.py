@@ -1,4 +1,4 @@
-#!usr/bin/env python3/
+#!/usr/bin/env python3
 """
 Trading-View Random Stock Selector
 Open a random NASDAQ stock in browser that satisfied user-defined price, market-cap, and SMA filters
@@ -170,7 +170,7 @@ class SMAComparisonSetting(Setting):
             close_prices = data['Close']
             # If not enough data to compute SMA
             if len(close_prices) < self.period:
-                logging.error(f"Ticker {ticker} does not have enough data ({len(data)} days) to calculate the 200-day moving average.")
+                logging.error(f"Ticker {ticker} does not have sufficient data to calculate MA.")
                 return False
             # Calculate SMA for the specified period
             sma = close_prices.rolling(window=self.period).mean().iloc[-1]
@@ -202,8 +202,7 @@ class SMAComparisonSetting(Setting):
 # ==============================================================================
 
 def load_nasdaq_tickers() -> list[str]:
-    print()
-    logging.info("Loading NASDAQ tickers...\n")
+    logging.info("Loading NASDAQ tickers...")
     df = pd.read_csv(NASDAQ_LIST_URL, sep='|')
     #The last row is a summary which is marked by file creation time
     df = df[~df['Symbol'].str.contains('File Creation Time', na=False)]
