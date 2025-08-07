@@ -190,12 +190,29 @@ class SMAComparisonSetting(Setting):
             return
         print(f"CURRENT: period = {self.period}, comparison-method = \"{self.comparison}\". ")
 
-        self.period = prompt_integer("Please input a positive integer value for SMA period: ", min=0, max=MAX_PERIOD)
+        self.period = prompt_integer("Please input a positive integer value for SMA period: ", min=0)
         self.comparison = ""
         while self.comparison not in (">=", "<="):
             self.comparison = input("Please input \"<=\" or \">=\" for comparison method: ")
 
         print(f"\nVARIABLES: status={self.status}, SMA period={self.period}, comparison-method=\"{self.comparison}\"\n")
+
+# ==============================================================================
+# Prefix Class
+# ==============================================================================
+
+class prefix:
+    def __init__(self, * name : str, filters : list[Setting]):
+        self.name = name
+        self.filters = filters
+
+    def activate(self):
+        return self.filters
+    
+    def prefix_name(self):
+        return self.name
+
+
 
 # ==============================================================================
 # Core Functions
@@ -224,7 +241,7 @@ def settings_panel(filters : list[Setting]) -> None:
         i = int(i)
         if (i > 0 and i-1 < len(filters)):
             filters[i-1].adjust()
-        else:
+        elif i == -1:
             return None
 
 
